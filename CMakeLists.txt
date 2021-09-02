@@ -28,7 +28,8 @@ SET(USE_OPENCV ON)
 SET(USE_REALSENSE ON)
 
 SET(ANDREI_UTILS_INCLUDE_DIRS utils/include utils/json)
-SET(ANDREI_UTILS_LIB AndreiUtils)
+SET(UTILS_USE_PROJECT RealsenseRecord)
+SET(ANDREI_UTILS_LIB "${UTILS_USE_PROJECT}_AndreiUtils")
 add_subdirectory(utils)
 include_directories(${ANDREI_UTILS_INCLUDE_DIRS})
 

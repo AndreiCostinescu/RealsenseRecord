@@ -77,8 +77,10 @@ bool ReadRecording::readDepth(cv::Mat **depth) {
 void ReadRecording::initializeImageReader() {
     if (this->parameters.imageFormat == "avi") {
         this->imageReader = new VideoCapture(this->imageFile);
+        return;
     } else if (this->parameters.imageFormat == "bin") {
         this->imageReaderBinary = new ifstream(this->imageFile, fstream::binary);
+        return;
     }
     throw runtime_error("Unknown image format: \"" + this->parameters.imageFormat + "\"");
 }
@@ -86,6 +88,7 @@ void ReadRecording::initializeImageReader() {
 void ReadRecording::initializeDepthReader() {
     if (this->parameters.depthFormat == "bin") {
         this->depthReaderBinary = new ifstream(this->depthFile, fstream::binary);
+        return;
     }
     throw runtime_error("Unknown depth format: \"" + this->parameters.depthFormat + "\"");
 }
@@ -96,9 +99,11 @@ void ReadRecording::releaseImageReader() {
     } else if (this->parameters.imageFormat == "avi") {
         this->imageReader->release();
         delete this->imageReader;
+        return;
     } else if (this->parameters.imageFormat == "bin") {
         this->imageReaderBinary->close();
         delete this->imageReaderBinary;
+        return;
     }
     throw runtime_error("Unknown image format: \"" + this->parameters.imageFormat + "\"");
 }
@@ -109,6 +114,7 @@ void ReadRecording::releaseDepthReader() {
     } else if (this->parameters.depthFormat == "bin") {
         this->depthReaderBinary->close();
         delete this->depthReaderBinary;
+        return;
     }
     throw runtime_error("Unknown depth format: \"" + this->parameters.depthFormat + "\"");
 }

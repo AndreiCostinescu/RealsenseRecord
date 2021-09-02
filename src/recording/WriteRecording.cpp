@@ -183,8 +183,10 @@ void WriteRecording::writeImage(Mat *image) {
     imageRotation(image);
     if (this->parameters.imageFormat == "avi") {
         this->imageWriter->write(*image);
+        return;
     } else if (this->parameters.imageFormat == "bin") {
         matWriteBinary(this->imageWriterBinary, *image);
+        return;
     }
     throw runtime_error("Unknown image format: \"" + this->parameters.imageFormat + "\"");
 }
@@ -193,6 +195,7 @@ void WriteRecording::writeDepth(cv::Mat *depth) {
     imageRotation(depth);
     if (this->parameters.depthFormat == "bin") {
         matWriteBinary(this->depthWriterBinary, *depth);
+        return;
     }
     throw runtime_error("Unknown depth format: \"" + this->parameters.depthFormat + "\"");
 }
@@ -231,9 +234,11 @@ void WriteRecording::releaseImageWriter() {
     } else if (this->parameters.imageFormat == "avi") {
         this->imageWriter->release();
         delete this->imageWriter;
+        return;
     } else if (this->parameters.imageFormat == "bin") {
         this->imageWriterBinary->close();
         delete this->imageWriterBinary;
+        return;
     }
     throw runtime_error("Unknown image format: \"" + this->parameters.imageFormat + "\"");
 }
@@ -244,6 +249,7 @@ void WriteRecording::releaseDepthWriter() {
     } else if (this->parameters.depthFormat == "bin") {
         this->depthWriterBinary->close();
         delete this->depthWriterBinary;
+        return;
     }
     throw runtime_error("Unknown depth format: \"" + this->parameters.depthFormat + "\"");
 }

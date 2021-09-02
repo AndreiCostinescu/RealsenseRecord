@@ -37,13 +37,13 @@ int main() {
         depthWidth = config["depthWidth"].get<int>();
     }
     string recordImageFormat = "avi", recordDepthFormat = "bin", recordParametersFormat = "json";
-    if (config.contains("recordImageFormat")) {
+    if (config.contains("recordImageFormat") && !config["recordImageFormat"].get<string>().empty()) {
         recordImageFormat = config["recordImageFormat"].get<string>();
     }
-    if (config.contains("recordDepthFormat")) {
+    if (config.contains("recordDepthFormat") && !config["recordDepthFormat"].get<string>().empty()) {
         recordDepthFormat = config["recordDepthFormat"].get<string>();
     }
-    if (config.contains("recordParametersFormat")) {
+    if (config.contains("recordParametersFormat") && !config["recordParametersFormat"].get<string>().empty()) {
         recordParametersFormat = config["recordParametersFormat"].get<string>();
     }
 

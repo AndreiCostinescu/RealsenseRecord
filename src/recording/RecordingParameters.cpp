@@ -22,14 +22,20 @@ const map<string, rs2_distortion> RecordingParameters::DISTORTION_MODELS = {
 
 const vector<string> RecordingParameters::PARAMETER_FORMATS = {"xml", "json",};
 
-RecordingParameters::RecordingParameters() : fps(), model(), coefficients(), initialized(false) {}
+RecordingParameters::RecordingParameters()
+        : fps(), rotation(RotationType::NO_ROTATION), model(), coefficients(), initialized(false) {}
+
+RecordingParameters::RecordingParameters(string imageFormat, string depthFormat, string parametersFormat,
+                                         RotationType rotationType) :
+        fps(), rotation(rotationType), model(), coefficients(), imageFormat(move(imageFormat)),
+        depthFormat(move(depthFormat)), parametersFormat(move(parametersFormat)), initialized(false) {}
 
 RecordingParameters::RecordingParameters(string imageFormat, string depthFormat, string parametersFormat,
                                          const RecordingParameters *recordingParameters,
                                          rs2::video_stream_profile *videoStreamProfile, VideoCapture *videoCapture,
                                          RotationType rotationType) :
-        fps(), model(), coefficients(), imageFormat(move(imageFormat)), depthFormat(move(depthFormat)),
-        parametersFormat(move(parametersFormat)) {
+        fps(), rotation(rotationType), model(), coefficients(), imageFormat(move(imageFormat)),
+        depthFormat(move(depthFormat)), parametersFormat(move(parametersFormat)) {
     assert (recordingParameters != nullptr ^ videoStreamProfile != nullptr ^ videoCapture != nullptr);
     if (recordingParameters != nullptr) {
         this->setParameters(recordingParameters, rotationType);
@@ -46,8 +52,8 @@ RecordingParameters::RecordingParameters(string imageFormat, string depthFormat,
 RecordingParameters::RecordingParameters(double fps, int width, int height, float fx, float fy, float ppx, float ppy,
                                          rs2_distortion model, const float *coefficients, string imageFormat,
                                          string depthFormat, string parametersFormat, RotationType rotationType) :
-        fps(fps), model(model), coefficients(), imageFormat(move(imageFormat)), depthFormat(move(depthFormat)),
-        parametersFormat(move(parametersFormat)) {
+        fps(fps), rotation(rotationType), model(model), coefficients(), imageFormat(move(imageFormat)),
+        depthFormat(move(depthFormat)), parametersFormat(move(parametersFormat)) {
     this->setRotationDependentParameters(rotationType, width, height, fx, fy, ppx, ppy);
     for (int i = 0; i < 5; i++) {
         this->coefficients[i] = coefficients[i];
@@ -57,8 +63,8 @@ RecordingParameters::RecordingParameters(double fps, int width, int height, floa
 
 RecordingParameters::RecordingParameters(double fps, rs2_intrinsics intrinsics, string imageFormat, string depthFormat,
                                          string parametersFormat, RotationType rotationType) :
-        fps(fps), width(intrinsics.width), height(intrinsics.height), fx(intrinsics.fx), fy(intrinsics.fy),
-        ppx(intrinsics.ppx), ppy(intrinsics.ppy), model(intrinsics.model), coefficients(),
+        fps(fps), rotation(rotationType), width(intrinsics.width), height(intrinsics.height), fx(intrinsics.fx),
+        fy(intrinsics.fy), ppx(intrinsics.ppx), ppy(intrinsics.ppy), model(intrinsics.model), coefficients(),
         imageFormat(move(imageFormat)), depthFormat(move(depthFormat)), parametersFormat(move(parametersFormat)) {
     this->setRotationDependentParameters(rotationType, intrinsics.width, intrinsics.height, intrinsics.fx,
                                          intrinsics.fy, intrinsics.ppx, intrinsics.ppy);
@@ -72,13 +78,14 @@ RecordingParameters::~RecordingParameters() = default;
 
 void RecordingParameters::clear() {
     this->fps = 0.0;
+    this->rotation = RotationType::NO_ROTATION;
     this->width = 0;
     this->height = 0;
     this->fx = 0;
     this->fy = 0;
     this->ppx = 0;
     this->ppy = 0;
-    for (float & coefficient : this->coefficients) {
+    for (float &coefficient : this->coefficients) {
         coefficient = 0;
     }
     this->model = RS2_DISTORTION_NONE;
@@ -151,6 +158,7 @@ void RecordingParameters::deserialize(const string &parametersFile, const string
 void RecordingParameters::writeParameters(cv::FileStorage &fs) const {
     fs << "{";
     fs << "fps" << this->fps;
+    fs << "rotation" << (int) this->rotation;
     fs << "w" << this->width;
     fs << "h" << this->height;
     fs << "fx" << this->fx;
@@ -171,6 +179,7 @@ void RecordingParameters::writeParameters(cv::FileStorage &fs) const {
 
 void RecordingParameters::readParameters(const FileNode &node) {
     this->fps = (double) node["fps"];
+    this->rotation = (RotationType) (int) node["rotation"];
     this->width = (int) node["w"];
     this->height = (int) node["h"];
     this->fx = (float) node["fx"];
@@ -196,6 +205,7 @@ void RecordingParameters::readParameters(const FileNode &node) {
 void RecordingParameters::to_json(json &j) const {
     j.clear();
     j["fps"] = this->fps;
+    j["rotation"] = (int) this->rotation;
     j["w"] = this->width;
     j["h"] = this->height;
     j["fx"] = this->fx;
@@ -215,6 +225,7 @@ void RecordingParameters::to_json(json &j) const {
 
 void RecordingParameters::from_json(const json &j) {
     this->fps = j["fps"].get<double>();
+    this->rotation = (RotationType) j["rotation"].get<int>();
     this->width = j["w"].get<int>();
     this->height = j["h"].get<int>();
     this->fx = j["fx"].get<float>();
@@ -252,8 +263,9 @@ rs2_intrinsics RecordingParameters::getIntrinsics() {
     return intrinsics;
 }
 
-void RecordingParameters::setRotationDependentParameters(RotationType rotation, int _width, int _height) {
-    switch (rotation) {
+void RecordingParameters::setRotationDependentParameters(RotationType _rotation, int _width, int _height) {
+    this->rotation = _rotation;
+    switch (this->rotation) {
         case LEFT_90:
         case LEFT_270:
             this->width = _height;
@@ -267,9 +279,10 @@ void RecordingParameters::setRotationDependentParameters(RotationType rotation, 
     }
 }
 
-void RecordingParameters::setRotationDependentParameters(RotationType rotation, int _width, int _height, float _fx,
+void RecordingParameters::setRotationDependentParameters(RotationType _rotation, int _width, int _height, float _fx,
                                                          float _fy, float _ppx, float _ppy) {
-    switch (rotation) {
+    this->rotation = _rotation;
+    switch (this->rotation) {
         case LEFT_90:
         case LEFT_270:
             this->width = _height;

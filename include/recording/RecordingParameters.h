@@ -20,6 +20,9 @@ public:
     RecordingParameters();
 
     RecordingParameters(std::string imageFormat, std::string depthFormat, std::string parametersFormat,
+                        RotationType rotationType = RotationType::NO_ROTATION);
+
+    RecordingParameters(std::string imageFormat, std::string depthFormat, std::string parametersFormat,
                         const RecordingParameters *recordingParameters = nullptr,
                         rs2::video_stream_profile *videoStreamProfile = nullptr,
                         cv::VideoCapture *videoCapture = nullptr,
@@ -68,6 +71,7 @@ public:
     float ppx{}, ppy{}, fx{}, fy{}, coefficients[5];
     rs2_distortion model;
     std::string imageFormat, depthFormat, parametersFormat;
+    RotationType rotation;
 
 private:
     void setRotationDependentParameters(RotationType rotation, int _width, int _height);

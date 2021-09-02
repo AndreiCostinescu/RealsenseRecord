@@ -23,9 +23,12 @@ public:
     static std::string format(int number, const char *type, const std::string &format);
 
     explicit Recording(std::string imageFormat = "avi", std::string depthFormat = "bin",
-                       std::string parameterFormat = "xml", const RecordingParameters *recordingParameters = nullptr,
-                       rs2::video_stream_profile *videoStreamProfile = nullptr,
-                       cv::VideoCapture *videoCapture = nullptr, RotationType rotationType = RotationType::NO_ROTATION);
+                       std::string parameterFormat = "json", RotationType rotationType = RotationType::NO_ROTATION);
+
+    Recording(std::string imageFormat, std::string depthFormat, std::string parameterFormat,
+              const RecordingParameters *recordingParameters = nullptr,
+              rs2::video_stream_profile *videoStreamProfile = nullptr,
+              cv::VideoCapture *videoCapture = nullptr, RotationType rotationType = RotationType::NO_ROTATION);
 
     Recording(double fps, int width, int height, float fx, float fy, float ppx, float ppy, rs2_distortion model,
               const float coefficients[5], std::string imageFormat = "avi", std::string depthFormat = "bin",

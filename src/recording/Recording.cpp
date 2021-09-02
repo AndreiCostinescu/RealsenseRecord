@@ -30,7 +30,7 @@ string Recording::format(int number, const char *type, const string &format) {
     strcat(outputFileNameBuffer, "_");
     strcat(outputFileNameBuffer, buffer);
 
-    if (strcmp(type, "image") == 0) {
+    if (strcmp(type, "image") == 0 || strcmp(type, "video") == 0) {
         if (format != "bin" && format != "avi") {
             throw runtime_error("Unknown format for image: \"" + format + R"(". Accepted are "bin" and "avi")");
         }
@@ -50,6 +50,9 @@ string Recording::format(int number, const char *type, const string &format) {
     strcat(outputFileNameBuffer, format.c_str());
     return outputFileNameBuffer;
 }
+
+Recording::Recording(string imageFormat, string depthFormat, string parameterFormat, RotationType rotationType) :
+        parameters(move(imageFormat), move(depthFormat), move(parameterFormat), rotationType), imageFile(), depthFile(), parameterFile() {}
 
 Recording::Recording(string imageFormat, string depthFormat, string parameterFormat,
                      const RecordingParameters *recordingParameters, rs2::video_stream_profile *videoStreamProfile,

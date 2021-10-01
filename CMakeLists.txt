@@ -42,7 +42,7 @@ set(EXTERNAL_LIBS ${ANDREI_UTILS_LIB} ${EXTERNAL_LIBS})
 
 include_directories("include" "private_include")
 
-add_library(RealsenseRecording src/RealsenseCapture.cpp src/recording/RecordingParameters.cpp src/recording/Recording.cpp src/recording/ReadRecording.cpp src/recording/WriteRecording.cpp src/utils.cpp)
+add_library(RealsenseRecording src/RealsenseCapture.cpp src/recording/RecordingParameters.cpp src/recording/Recording.cpp src/recording/ReadRecording.cpp src/recording/WriteRecording.cpp src/configDirectoryLocation.cpp src/utils.cpp)
 
 add_executable(RealsenseRecord src/main.cpp)
 target_link_libraries(RealsenseRecord RealsenseRecording ${EXTERNAL_LIBS})

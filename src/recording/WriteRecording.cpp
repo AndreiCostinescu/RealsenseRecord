@@ -6,7 +6,7 @@
 #include <AndreiUtils/utilsJson.h>
 #include <AndreiUtils/utilsOpenCV.h>
 #include <AndreiUtils/utilsRealsense.h>
-#include <utils.h>
+#include <configDirectoryLocation.h>
 
 using namespace AndreiUtils;
 using namespace cv;

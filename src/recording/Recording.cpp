@@ -5,7 +5,7 @@
 #include <RealsenseRecording/recording/Recording.h>
 #include <AndreiUtils/utilsFiles.h>
 #include <AndreiUtils/utilsJson.h>
-#include <utils.h>
+#include <configDirectoryLocation.h>
 
 using namespace AndreiUtils;
 using namespace cv;

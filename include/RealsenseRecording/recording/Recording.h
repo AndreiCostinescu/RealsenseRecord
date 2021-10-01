@@ -16,9 +16,6 @@
 namespace RealsenseRecording {
     class Recording {
     public:
-        static std::string outputDirectory;
-        static bool outputDirectoryInitialized;
-
         static std::string getOutputDirectory();
 
         static std::string format(int number, const char *type, const std::string &format);
@@ -52,6 +49,9 @@ namespace RealsenseRecording {
         const RecordingParameters *getParameters();
 
     protected:
+        static std::string outputDirectory;
+        static bool outputDirectoryInitialized;
+
         RecordingParameters parameters;
         std::string imageFile, depthFile, parameterFile;
     };

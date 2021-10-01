@@ -42,7 +42,6 @@ include_directories(${ANDREI_UTILS_INCLUDE})
 include_directories("include")
 
 add_library(RealsenseRecording src/recording/RecordingParameters.cpp src/recording/Recording.cpp src/recording/ReadRecording.cpp src/recording/WriteRecording.cpp src/utils.cpp)
-target_link_libraries(RealsenseRecording ${EXTERNAL_LIBS} ${ANDREI_UTILS_LIB})
 
 add_executable(RealsenseRecord src/main.cpp src/RealsenseCapture.cpp)
-target_link_libraries(RealsenseRecord RealsenseRecording)
+target_link_libraries(RealsenseRecord RealsenseRecording ${EXTERNAL_LIBS} ${ANDREI_UTILS_LIB})

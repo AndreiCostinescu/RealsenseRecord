@@ -2,13 +2,14 @@
 // Created by andrei on 26.11.20.
 //
 
-#include <recording/Recording.h>
+#include <RealsenseRecording/recording/Recording.h>
 #include <AndreiUtils/utilsFiles.h>
 #include <AndreiUtils/utilsJson.h>
 #include <utils.h>
 
 using namespace AndreiUtils;
 using namespace cv;
+using namespace RealsenseRecording;
 using namespace std;
 
 string Recording::outputDirectory;
@@ -16,7 +17,7 @@ bool Recording::outputDirectoryInitialized = false;
 
 string Recording::getOutputDirectory() {
     if (!Recording::outputDirectoryInitialized) {
-        auto config = readJsonFile(configDirectoryLocation + "recordingOutputDirectory.cfg");
+        auto config = readJsonFile(RealsenseRecording::configDirectoryLocation + "recordingOutputDirectory.cfg");
         Recording::outputDirectory = config["outputDirectory"];
         Recording::outputDirectoryInitialized = true;
     }

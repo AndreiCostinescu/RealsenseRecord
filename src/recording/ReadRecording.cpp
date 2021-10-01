@@ -2,11 +2,12 @@
 // Created by andrei on 25.08.21.
 //
 
-#include <recording/ReadRecording.h>
+#include <RealsenseRecording/recording/ReadRecording.h>
 #include <AndreiUtils/utilsOpenCV.h>
 
 using namespace AndreiUtils;
 using namespace cv;
+using namespace RealsenseRecording;
 using namespace std;
 
 ReadRecording::ReadRecording(int fileNumber) : Recording(), imageReaderInitialized(false),

@@ -1,16 +1,18 @@
 #include <AndreiUtils/utilsJson.h>
 #include <iostream>
-#include <RealsenseCapture.h>
+#include <RealsenseRecording/RealsenseCapture.h>
 #include <stdexcept>
 #include <utils.h>
 
 using namespace AndreiUtils;
+using namespace RealsenseRecording;
 using namespace std;
 
 int main() {
     cout << "Hello World!" << endl;
+    setConfigDirectoryLocation("../config/");
 
-    auto config = readJsonFile(configDirectoryLocation + "realsenseCaptureArguments.cfg");
+    auto config = readJsonFile(RealsenseRecording::configDirectoryLocation + "realsenseCaptureArguments.cfg");
     int fps = config["fps"].get<int>();
     bool withRecord = false;
     if (config.contains("withRecord")) {

@@ -2,11 +2,12 @@
 // Created by andrei on 25.08.21.
 //
 
-#include <RealsenseCapture.h>
+#include <RealsenseRecording/RealsenseCapture.h>
 #include <AndreiUtils/utilsRealsense.h>
 
 using namespace AndreiUtils;
 using namespace cv;
+using namespace RealsenseRecording;
 using namespace rs2;
 using namespace std;
 

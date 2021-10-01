@@ -2,7 +2,7 @@
 // Created by andrei on 25.08.21.
 //
 
-#include <recording/WriteRecording.h>
+#include <RealsenseRecording/recording/WriteRecording.h>
 #include <AndreiUtils/utilsJson.h>
 #include <AndreiUtils/utilsOpenCV.h>
 #include <AndreiUtils/utilsRealsense.h>
@@ -10,6 +10,7 @@
 
 using namespace AndreiUtils;
 using namespace cv;
+using namespace RealsenseRecording;
 using namespace rs2;
 using namespace std;
 
@@ -167,7 +168,7 @@ void WriteRecording::bufferThreadWrite() {
 void WriteRecording::initializeThreadAndBuffers() {
     this->writerThread = thread(&WriteRecording::bufferThreadWrite, this);
     if (WriteRecording::dataBufferSize == 0) {
-        auto config = readJsonFile(configDirectoryLocation + "recordingOutputDirectory.cfg");
+        auto config = readJsonFile(RealsenseRecording::configDirectoryLocation + "recordingOutputDirectory.cfg");
         WriteRecording::dataBufferSize = config["writeBufferSize"].get<int>();
         if (WriteRecording::dataBufferSize < 1) {
             throw runtime_error(

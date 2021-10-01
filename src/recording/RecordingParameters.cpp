@@ -2,13 +2,14 @@
 // Created by andrei on 27.11.20.
 //
 
-#include <recording/RecordingParameters.h>
+#include <RealsenseRecording/recording/RecordingParameters.h>
 #include <AndreiUtils/utils.hpp>
 #include <AndreiUtils/utilsJson.h>
 
 using namespace AndreiUtils;
 using namespace cv;
 using namespace nlohmann;
+using namespace RealsenseRecording;
 using namespace std;
 
 const map<string, rs2_distortion> RecordingParameters::DISTORTION_MODELS = {
@@ -309,25 +310,15 @@ bool RecordingParameters::isInitialized() const {
     return this->initialized;
 }
 
-void write(FileStorage &fs, const string &, const RecordingParameters &x) {
+void cv::write(FileStorage &fs, const string &, const RecordingParameters &x) {
     x.writeParameters(fs);
 }
 
-void read(const FileNode &node, RecordingParameters &x, const RecordingParameters &default_value) {
+void cv::read(const FileNode &node, RecordingParameters &x, const RecordingParameters &default_value) {
     if (node.empty()) {
         x = default_value;
     } else {
         x.readParameters(node);
-    }
-}
-
-void write(FileStorage &fs, const string &, const RecordingParameters *&x) {
-    x->writeParameters(fs);
-}
-
-void read(const FileNode &node, RecordingParameters *&x, RecordingParameters *) {
-    if (!node.empty()) {
-        x->readParameters(node);
     }
 }
 

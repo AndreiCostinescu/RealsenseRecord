@@ -39,7 +39,7 @@ message("AndreiUtils include dirs set to ${ANDREI_UTILS_INCLUDE}")
 message("AndreiUtils library path set to ${ANDREI_UTILS_LIB}")
 include_directories(${ANDREI_UTILS_INCLUDE})
 
-include_directories("include")
+include_directories("include" "private_include")
 
 add_library(RealsenseRecording src/recording/RecordingParameters.cpp src/recording/Recording.cpp src/recording/ReadRecording.cpp src/recording/WriteRecording.cpp src/utils.cpp)
 

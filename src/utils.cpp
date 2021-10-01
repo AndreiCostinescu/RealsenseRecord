@@ -6,4 +6,8 @@
 
 using namespace std;
 
-string configDirectoryLocation = "../config/";
+string RealsenseRecording::configDirectoryLocation;
+
+void RealsenseRecording::setConfigDirectoryLocation(const std::string &_configDirectoryLocation) {
+    configDirectoryLocation = _configDirectoryLocation;
+}

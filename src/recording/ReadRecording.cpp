@@ -3,8 +3,9 @@
 //
 
 #include <recording/ReadRecording.h>
-#include <andrei_utils/utilsOpenCV.h>
+#include <AndreiUtils/utilsOpenCV.h>
 
+using namespace AndreiUtils;
 using namespace cv;
 using namespace std;
 
@@ -34,13 +35,21 @@ bool ReadRecording::readData(Mat **image, Mat **depth) {
     if (image != nullptr) {
         bool imageReadSuccess = this->readImage(image);
         if (!imageReadSuccess) {
-            assert(!depth || !this->readDepth(depth));
+            if (depth && this->readDepth(depth)) {
+                cout << "Something is wrong with the serialization... "
+                     << "There are no more video frames left but there still are depth frames!" << endl;
+            }
+            // assert(!depth || !this->readDepth(depth));
             return false;
         }
     }
     if (depth != nullptr) {
         bool depthReadSuccess = this->readDepth(depth);
-        assert(depthReadSuccess);
+        if (image && !depthReadSuccess) {
+            cout << "Something is wrong with the serialization... "
+                 << "There are no more depth frames left but there still are color frames!" << endl;
+        }
+        // assert(depthReadSuccess);
         if (!image || !depthReadSuccess) {
             return false;
         }
@@ -69,7 +78,14 @@ bool ReadRecording::readImage(Mat **image) {
 
 bool ReadRecording::readDepth(cv::Mat **depth) {
     if (this->parameters.depthFormat == "bin") {
-        return matReadBinary(this->depthReaderBinary, *depth);
+        bool readSuccess = matReadBinary(this->depthReaderBinary, *depth);
+        if (!readSuccess) {
+            return false;
+        }
+        if ((**depth).type() == CV_16U) {
+            convertDepthToMetersDouble64(*depth);
+        }
+        return true;
     }
     throw runtime_error("Unknown depth format: \"" + this->parameters.depthFormat + "\"");
 }

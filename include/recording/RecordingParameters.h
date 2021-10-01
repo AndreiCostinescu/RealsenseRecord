@@ -5,11 +5,11 @@
 #ifndef DARKNETOPENPOSEREALSENSE_RECORDINGPARAMETERS_H
 #define DARKNETOPENPOSEREALSENSE_RECORDINGPARAMETERS_H
 
+#include <AndreiUtils/enums/RotationType.h>
+#include <AndreiUtils/json.hpp>
 #include <librealsense2/rs.hpp>
 #include <opencv2/opencv.hpp>
 #include <string>
-#include <andrei_utils/enums/RotationType.h>
-#include <andrei_utils/json.hpp>
 #include <vector>
 
 class RecordingParameters {
@@ -20,33 +20,35 @@ public:
     RecordingParameters();
 
     RecordingParameters(std::string imageFormat, std::string depthFormat, std::string parametersFormat,
-                        RotationType rotationType = RotationType::NO_ROTATION);
+                        AndreiUtils::RotationType rotationType = AndreiUtils::RotationType::NO_ROTATION);
 
     RecordingParameters(std::string imageFormat, std::string depthFormat, std::string parametersFormat,
                         const RecordingParameters *recordingParameters = nullptr,
                         rs2::video_stream_profile *videoStreamProfile = nullptr,
                         cv::VideoCapture *videoCapture = nullptr,
-                        RotationType rotationType = RotationType::NO_ROTATION);
+                        AndreiUtils::RotationType rotationType = AndreiUtils::RotationType::NO_ROTATION);
 
     RecordingParameters(double fps, int width, int height, float fx, float fy, float ppx, float ppy,
                         rs2_distortion model, const float coefficients[5], std::string imageFormat,
                         std::string depthFormat, std::string parametersFormat,
-                        RotationType rotationType = RotationType::NO_ROTATION);
+                        AndreiUtils::RotationType rotationType = AndreiUtils::RotationType::NO_ROTATION);
 
     RecordingParameters(double fps, rs2_intrinsics intrinsics, std::string imageFormat, std::string depthFormat,
-                        std::string parametersFormat, RotationType rotationType = RotationType::NO_ROTATION);
+                        std::string parametersFormat,
+                        AndreiUtils::RotationType rotationType = AndreiUtils::RotationType::NO_ROTATION);
 
     ~RecordingParameters();
 
     void clear();
 
     void setParameters(const rs2::video_stream_profile *videoStreamProfile,
-                       RotationType rotationType = RotationType::NO_ROTATION);
+                       AndreiUtils::RotationType rotationType = AndreiUtils::RotationType::NO_ROTATION);
 
-    void setParameters(const cv::VideoCapture *videoCapture, RotationType rotationType = RotationType::NO_ROTATION);
+    void setParameters(const cv::VideoCapture *videoCapture,
+                       AndreiUtils::RotationType rotationType = AndreiUtils::RotationType::NO_ROTATION);
 
     void setParameters(const RecordingParameters *recordingParameters,
-                       RotationType rotationType = RotationType::NO_ROTATION);
+                       AndreiUtils::RotationType rotationType = AndreiUtils::RotationType::NO_ROTATION);
 
     void serialize(const std::string &parametersFile) const;
 
@@ -71,13 +73,13 @@ public:
     float ppx{}, ppy{}, fx{}, fy{}, coefficients[5];
     rs2_distortion model;
     std::string imageFormat, depthFormat, parametersFormat;
-    RotationType rotation;
+    AndreiUtils::RotationType rotation;
 
 private:
-    void setRotationDependentParameters(RotationType rotation, int _width, int _height);
+    void setRotationDependentParameters(AndreiUtils::RotationType rotation, int _width, int _height);
 
-    void setRotationDependentParameters(RotationType rotation, int _width, int _height, float _fx, float _fy,
-                                        float _ppx, float _ppy);
+    void setRotationDependentParameters(AndreiUtils::RotationType rotation, int _width, int _height,
+                                        float _fx, float _fy, float _ppx, float _ppy);
 
     bool initialized;
 };

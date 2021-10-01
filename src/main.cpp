@@ -1,9 +1,10 @@
-#include <andrei_utils/utilsJson.h>
+#include <AndreiUtils/utilsJson.h>
 #include <iostream>
 #include <RealsenseCapture.h>
 #include <stdexcept>
 #include <utils.h>
 
+using namespace AndreiUtils;
 using namespace std;
 
 int main() {

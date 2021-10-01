@@ -14,16 +14,16 @@ public:
                             const RecordingParameters *recordingParameters = nullptr,
                             rs2::video_stream_profile *videoStreamProfile = nullptr,
                             cv::VideoCapture *videoCapture = nullptr,
-                            RotationType rotationType = RotationType::NO_ROTATION);
+                            AndreiUtils::RotationType rotationType = AndreiUtils::RotationType::NO_ROTATION);
 
     WriteRecording(double fps, int width, int height, float fx, float fy, float ppx, float ppy, rs2_distortion model,
                    const float coefficients[5], const std::string &imageWriteFormat = "avi",
                    const std::string &depthWriteFormat = "bin", const std::string &parametersWriteFormat = "xml",
-                   RotationType rotationType = RotationType::NO_ROTATION);
+                   AndreiUtils::RotationType rotationType = AndreiUtils::RotationType::NO_ROTATION);
 
     WriteRecording(double fps, rs2_intrinsics intrinsics, const std::string &imageWriteFormat = "avi",
                    const std::string &depthWriteFormat = "bin", const std::string &parametersWriteFormat = "xml",
-                   RotationType rotationType = RotationType::NO_ROTATION);
+                   AndreiUtils::RotationType rotationType = AndreiUtils::RotationType::NO_ROTATION);
 
     ~WriteRecording() override;
 
@@ -65,7 +65,7 @@ private:
     std::thread writerThread;
     std::mutex lock;
 
-    RotationType writeRotation;
+    AndreiUtils::RotationType writeRotation;
 
     std::vector<cv::Mat *> imageBuffer, depthBuffer;
     std::vector<unsigned long long> countBuffer;

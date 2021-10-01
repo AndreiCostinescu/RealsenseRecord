@@ -3,9 +3,10 @@
 //
 
 #include <recording/RecordingParameters.h>
-#include <andrei_utils/utils.hpp>
-#include <andrei_utils/utilsJson.h>
+#include <AndreiUtils/utils.hpp>
+#include <AndreiUtils/utilsJson.h>
 
+using namespace AndreiUtils;
 using namespace cv;
 using namespace nlohmann;
 using namespace std;

@@ -3,11 +3,12 @@
 //
 
 #include <recording/WriteRecording.h>
-#include <andrei_utils/utilsJson.h>
-#include <andrei_utils/utilsOpenCV.h>
-#include <andrei_utils/utilsRealsense.h>
+#include <AndreiUtils/utilsJson.h>
+#include <AndreiUtils/utilsOpenCV.h>
+#include <AndreiUtils/utilsRealsense.h>
 #include <utils.h>
 
+using namespace AndreiUtils;
 using namespace cv;
 using namespace rs2;
 using namespace std;
@@ -194,7 +195,9 @@ void WriteRecording::writeImage(Mat *image) {
 void WriteRecording::writeDepth(cv::Mat *depth) {
     imageRotation(depth);
     if (this->parameters.depthFormat == "bin") {
-        matWriteBinary(this->depthWriterBinary, *depth);
+        Mat convertedData;
+        convertDepthToMillimetersUInt16(depth, convertedData);
+        matWriteBinary(this->depthWriterBinary, convertedData);
         return;
     }
     throw runtime_error("Unknown depth format: \"" + this->parameters.depthFormat + "\"");

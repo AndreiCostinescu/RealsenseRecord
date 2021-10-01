@@ -3,8 +3,9 @@
 //
 
 #include <RealsenseCapture.h>
-#include <andrei_utils/utilsRealsense.h>
+#include <AndreiUtils/utilsRealsense.h>
 
+using namespace AndreiUtils;
 using namespace cv;
 using namespace rs2;
 using namespace std;

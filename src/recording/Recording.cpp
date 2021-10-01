@@ -3,10 +3,11 @@
 //
 
 #include <recording/Recording.h>
-#include <andrei_utils/utilsFiles.h>
-#include <andrei_utils/utilsJson.h>
+#include <AndreiUtils/utilsFiles.h>
+#include <AndreiUtils/utilsJson.h>
 #include <utils.h>
 
+using namespace AndreiUtils;
 using namespace cv;
 using namespace std;
 

@@ -17,6 +17,9 @@ bool Recording::outputDirectoryInitialized = false;
 
 string Recording::getOutputDirectory() {
     if (!Recording::outputDirectoryInitialized) {
+        if (RealsenseRecording::configDirectoryLocation.empty()) {
+            throw runtime_error("RealsenseRecording: configDirectoryLocation is not set...");
+        }
         auto config = readJsonFile(RealsenseRecording::configDirectoryLocation + "recordingOutputDirectory.cfg");
         Recording::outputDirectory = config["outputDirectory"];
         Recording::outputDirectoryInitialized = true;

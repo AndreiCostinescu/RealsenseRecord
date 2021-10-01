@@ -168,6 +168,9 @@ void WriteRecording::bufferThreadWrite() {
 void WriteRecording::initializeThreadAndBuffers() {
     this->writerThread = thread(&WriteRecording::bufferThreadWrite, this);
     if (WriteRecording::dataBufferSize == 0) {
+        if (RealsenseRecording::configDirectoryLocation.empty()) {
+            throw runtime_error("RealsenseRecording: configDirectoryLocation is not set...");
+        }
         auto config = readJsonFile(RealsenseRecording::configDirectoryLocation + "recordingOutputDirectory.cfg");
         WriteRecording::dataBufferSize = config["writeBufferSize"].get<int>();
         if (WriteRecording::dataBufferSize < 1) {

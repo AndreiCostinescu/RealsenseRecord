@@ -3,6 +3,8 @@ project(RealsenseRecord)
 
 set(CMAKE_CXX_STANDARD 14)
 
+set(OPENCV_VERSION "" CACHE STRING "The opencv version to use in the project")
+
 if (UNIX)
     set(EXTERNAL_LIBS pthread ${EXTERNAL_LIBS})
 endif ()
@@ -11,11 +13,11 @@ find_package(Eigen3 3.3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIRS})
 set(EXTERNAL_LIBS Eigen3::Eigen ${EXTERNAL_LIBS})
 
-if (PERCEPTRON_BUILD)
-    find_package(OpenCV 3.2 REQUIRED)
-else (PERCEPTRON_BUILD)
-    find_package(OpenCV 4 REQUIRED HINTS "/usr/local/src/opencv/build-release")
-endif (PERCEPTRON_BUILD)
+if ("${OPENCV_VERSION}" STREQUAL "")
+    find_package(OpenCV REQUIRED)
+else ()
+    find_package(OpenCV ${OPENCV_VERSION} REQUIRED)
+endif ()
 include_directories(${OpenCV_INCLUDE_DIRS})
 set(EXTERNAL_LIBS ${OpenCV_LIBS} ${EXTERNAL_LIBS})
 

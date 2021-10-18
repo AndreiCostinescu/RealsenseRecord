@@ -16,6 +16,12 @@ using namespace std;
 
 int WriteRecording::dataBufferSize = 0;
 
+WriteRecording *WriteRecording::createEmptyPtr(const string &imageWriteFormat, const string &depthWriteFormat,
+                                               const string &parametersWriteFormat,
+                                               AndreiUtils::RotationType rotationType) {
+    return new WriteRecording(true, imageWriteFormat, depthWriteFormat, parametersWriteFormat, rotationType);
+}
+
 WriteRecording::WriteRecording(const string &imageWriteFormat, const string &depthWriteFormat,
                                const string &parametersWriteFormat, const RecordingParameters *recordingParameters,
                                rs2::video_stream_profile *videoStreamProfile, VideoCapture *videoCapture,
@@ -23,7 +29,7 @@ WriteRecording::WriteRecording(const string &imageWriteFormat, const string &dep
         Recording(imageWriteFormat, depthWriteFormat, parametersWriteFormat, recordingParameters, videoStreamProfile,
                   videoCapture, rotationType), imageBuffer(), depthBuffer(), countBuffer(), writeFlag(true),
         bufferStartIndex(0), bufferEndIndex(0), bufferSize(0), writeRotation(rotationType),
-        imageWriterInitialized(false), depthWriterInitialized(false) {
+        imageWriterInitialized(false), depthWriterInitialized(false), parametersSet(true) {
     this->initializeThreadAndBuffers();
 }
 
@@ -34,7 +40,7 @@ WriteRecording::WriteRecording(double fps, int width, int height, float fx, floa
         Recording(fps, width, height, fx, fy, ppx, ppy, model, coefficients, imageWriteFormat, depthWriteFormat,
                   parametersWriteFormat, rotationType), imageBuffer(), depthBuffer(), countBuffer(), writeFlag(true),
         bufferStartIndex(0), bufferEndIndex(0), bufferSize(0), writeRotation(rotationType),
-        imageWriterInitialized(false), depthWriterInitialized(false) {
+        imageWriterInitialized(false), depthWriterInitialized(false), parametersSet(true) {
     this->initializeThreadAndBuffers();
 }
 
@@ -43,7 +49,8 @@ WriteRecording::WriteRecording(double fps, rs2_intrinsics intrinsics, const stri
                                RotationType rotationType) :
         Recording(fps, intrinsics, imageWriteFormat, depthWriteFormat, parametersWriteFormat, rotationType),
         imageBuffer(), depthBuffer(), countBuffer(), writeFlag(true), bufferStartIndex(0), bufferEndIndex(0),
-        bufferSize(0), writeRotation(rotationType), imageWriterInitialized(false), depthWriterInitialized(false) {
+        bufferSize(0), writeRotation(rotationType), imageWriterInitialized(false), depthWriterInitialized(false),
+        parametersSet(true) {
     this->initializeThreadAndBuffers();
 }
 
@@ -53,6 +60,7 @@ WriteRecording::~WriteRecording() {
     cout << "Wait until all remaining frames have been written!" << endl;
     this->writerThread.join();
     cout << "Finished writing!" << endl;
+    this->parametersSet = false;
 
     this->releaseImageWriter();
     this->releaseDepthWriter();
@@ -60,14 +68,17 @@ WriteRecording::~WriteRecording() {
 
 void WriteRecording::setParameters(const rs2::video_stream_profile *_videoStreamProfile) {
     this->parameters.setParameters(_videoStreamProfile, this->writeRotation);
+    this->parametersSet = true;
 }
 
 void WriteRecording::setParameters(const VideoCapture *_videoCapture) {
     this->parameters.setParameters(_videoCapture, this->writeRotation);
+    this->parametersSet = true;
 }
 
 void WriteRecording::setParameters(const RecordingParameters *_recordingParameters) {
     this->parameters.setParameters(_recordingParameters, this->writeRotation);
+    this->parametersSet = true;
 }
 
 bool WriteRecording::writeData(Mat *image, rs2::depth_frame *depth, unsigned long long counter) {
@@ -81,6 +92,9 @@ bool WriteRecording::writeData(Mat *image, rs2::depth_frame *depth, unsigned lon
 bool WriteRecording::writeData(Mat *image, Mat *depth, unsigned long long counter) {
     if ((image != nullptr && !this->imageWriterInitialized) || (depth != nullptr && !this->depthWriterInitialized)) {
         if (!this->imageWriterInitialized && !this->depthWriterInitialized) {
+            if (!this->parametersSet) {
+                throw runtime_error("Parameters have not been set but tried to write data!");
+            }
             // Write parameter data
             this->parameters.serialize(this->parameterFile);
             cout << "Wrote outputRecording data to file!" << endl;
@@ -134,6 +148,19 @@ bool WriteRecording::writeData(Mat &image, Mat &depth, unsigned long long counte
     this->writeData(&image, &depth, counter);
 }
 
+WriteRecording::WriteRecording(bool iWillSetParametersLater, const std::string &imageWriteFormat,
+                               const std::string &depthWriteFormat, const std::string &parametersWriteFormat,
+                               AndreiUtils::RotationType rotationType) :
+        Recording(imageWriteFormat, depthWriteFormat, parametersWriteFormat, rotationType), imageBuffer(),
+        depthBuffer(), countBuffer(), writeFlag(true), bufferStartIndex(0), bufferEndIndex(0), bufferSize(0),
+        writeRotation(rotationType), imageWriterInitialized(false), depthWriterInitialized(false),
+        parametersSet(false) {
+    if (!iWillSetParametersLater) {
+        throw runtime_error("When creating an empty WriteRecording, you must agree to set the parameters later!");
+    }
+    this->initializeThreadAndBuffers();
+}
+
 void WriteRecording::bufferThreadWrite() {
     while (this->writeFlag || this->bufferSize > 0) {
         while (this->writeFlag && this->bufferSize == 0) {
@@ -173,7 +200,7 @@ void WriteRecording::initializeThreadAndBuffers() {
         }
         auto config = readJsonFile(RealsenseRecording::configDirectoryLocation + "recordingOutputDirectory.cfg");
         WriteRecording::dataBufferSize = config["writeBufferSize"].get<int>();
-        if (WriteRecording::dataBufferSize < 1) {
+        if (WriteRecording::dataBufferSize< 1) {
             throw runtime_error(
                     "Can not work with a buffer size < 1! Was " + to_string(WriteRecording::dataBufferSize));
         }

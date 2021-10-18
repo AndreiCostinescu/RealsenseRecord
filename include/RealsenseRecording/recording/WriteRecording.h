@@ -10,9 +10,13 @@
 namespace RealsenseRecording {
     class WriteRecording : public Recording {
     public:
-        explicit WriteRecording(const std::string &imageWriteFormat = "avi",
-                                const std::string &depthWriteFormat = "bin",
-                                const std::string &parametersWriteFormat = "xml",
+        static WriteRecording *createEmptyPtr(const std::string &imageWriteFormat = "avi",
+                                              const std::string &depthWriteFormat = "bin",
+                                              const std::string &parametersWriteFormat = "xml",
+                                              AndreiUtils::RotationType rotationType = AndreiUtils::NO_ROTATION);
+
+        explicit WriteRecording(const std::string &imageWriteFormat, const std::string &depthWriteFormat,
+                                const std::string &parametersWriteFormat,
                                 const RecordingParameters *recordingParameters = nullptr,
                                 rs2::video_stream_profile *videoStreamProfile = nullptr,
                                 cv::VideoCapture *videoCapture = nullptr,
@@ -43,6 +47,11 @@ namespace RealsenseRecording {
         bool writeData(cv::Mat &image, cv::Mat &depth, unsigned long long counter = -1);
 
     private:
+        explicit WriteRecording(bool iWillSetParametersLater, const std::string &imageWriteFormat = "avi",
+                                const std::string &depthWriteFormat = "bin",
+                                const std::string &parametersWriteFormat = "xml",
+                                AndreiUtils::RotationType rotationType = AndreiUtils::RotationType::NO_ROTATION);
+
         static int dataBufferSize;
 
         void bufferThreadWrite();
@@ -72,7 +81,7 @@ namespace RealsenseRecording {
 
         std::vector<cv::Mat *> imageBuffer, depthBuffer;
         std::vector<unsigned long long> countBuffer;
-        bool writeFlag;
+        bool writeFlag, parametersSet;
         int bufferStartIndex, bufferEndIndex, bufferSize;
     };
 }

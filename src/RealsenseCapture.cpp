@@ -19,11 +19,6 @@ RealsenseCapture::RealsenseCapture(int fps, bool withRecord, int recordedFileNum
         IMAGE_FPS(fps), DEPTH_FPS(fps), inputRecording(), outputRecording(), IMAGE_HEIGHT(colorHeight),
         IMAGE_WIDTH(colorWidth), DEPTH_HEIGHT(depthHeight), DEPTH_WIDTH(depthWidth), depthIntrinsics(),
         writeFPSOnImage(writeFPSOnImage) {
-    if (withRecord) {
-        this->outputRecording = new WriteRecording(recordImageFormat, recordDepthFormat, recordParametersFormat);
-        this->outputRecording->setFiles(false);
-    }
-
     if (recordedFileNumber > -1) {
         this->inputRecording = new ReadRecording(recordedFileNumber);
         if (withRecord) {

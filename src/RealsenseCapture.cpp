@@ -3,7 +3,7 @@
 //
 
 #include <RealsenseRecording/RealsenseCapture.h>
-#include <AndreiUtils/utilsRealsense.h>
+#include <AndreiUtils/utilsOpenCVRealsense.h>
 
 using namespace AndreiUtils;
 using namespace cv;

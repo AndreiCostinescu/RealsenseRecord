@@ -8,7 +8,9 @@
 #include <iostream>
 
 #ifdef OPENCV
+
 #include <AndreiUtils/utilsOpenCVRealsense.h>
+
 #endif
 
 using namespace AndreiUtils;
@@ -22,7 +24,7 @@ RealsenseCapture::RealsenseCapture(int fps, bool withRecord, int recordedFileNum
                                    const string &recordParametersFormat, bool withOpenCV, bool writeFPSOnImage) :
         IMAGE_FPS(fps), DEPTH_FPS(fps), inputRecording(), outputRecording(), IMAGE_HEIGHT(colorHeight),
         IMAGE_WIDTH(colorWidth), DEPTH_HEIGHT(depthHeight), DEPTH_WIDTH(depthWidth), depthIntrinsics(),
-        writeFPSOnImage(writeFPSOnImage), imageFrame(nullptr), depthFrame(nullptr), withOpenCV(withOpenCV) {
+        writeFPSOnImage(writeFPSOnImage), withOpenCV(withOpenCV) {
     if (recordedFileNumber > -1) {
         this->inputRecording = new ReadRecording(recordedFileNumber);
         if (withRecord) {
@@ -141,6 +143,7 @@ bool RealsenseCapture::saveData() {
 }
 
 #ifdef OPENCV
+
 cv::Mat &RealsenseCapture::getImage() {
     return this->image;
 }
@@ -149,7 +152,7 @@ cv::Mat RealsenseCapture::getImage() const {
     return this->image;
 }
 
-void RealsenseCapture::setImage(const Mat &_image) {
+void RealsenseCapture::setImage(const cv::Mat &_image) {
     this->image = _image;
 }
 
@@ -161,25 +164,26 @@ cv::Mat RealsenseCapture::getDepth() const {
     return this->depth;
 }
 
-void RealsenseCapture::setDepth(const Mat &_depth) {
+void RealsenseCapture::setDepth(const cv::Mat &_depth) {
     this->depth = _depth;
 }
+
 #endif
 
-rs2::video_frame *&RealsenseCapture::getImageFrame() {
+rs2::frame &RealsenseCapture::getImageFrame() {
     return this->imageFrame;
 }
 
-rs2::video_frame *RealsenseCapture::getImageFrame() const {
-    return this->imageFrame;
+rs2::video_frame RealsenseCapture::getImageFrame() const {
+    return this->imageFrame.as<rs2::video_frame>();
 }
 
-rs2::depth_frame *&RealsenseCapture::getDepthFrame() {
+rs2::frame &RealsenseCapture::getDepthFrame() {
     return this->depthFrame;
 }
 
-rs2::depth_frame *RealsenseCapture::getDepthFrame() const {
-    return this->depthFrame;
+rs2::depth_frame RealsenseCapture::getDepthFrame() const {
+    return this->depthFrame.as<rs2::depth_frame>();
 }
 
 rs2_intrinsics &RealsenseCapture::getDepthIntrinsics() {
@@ -222,10 +226,8 @@ bool RealsenseCapture::updateFrame() {
         }
 
         // Get color & depth frames
-        delete this->imageFrame;
-        delete this->depthFrame;
-        this->imageFrame = new video_frame(this->frames.get_color_frame());
-        this->depthFrame = new depth_frame(this->frames.get_depth_frame());
+        this->imageFrame = this->frames.get_color_frame();
+        this->depthFrame = this->frames.get_depth_frame();
 
         if (this->withOpenCV) {
             #ifdef OPENCV
@@ -236,19 +238,20 @@ bool RealsenseCapture::updateFrame() {
             #endif
         } else {
             delete[] this->imageData;
-            int nrElements = this->imageFrame->get_height() * this->imageFrame->get_width() *
-                             this->imageFrame->get_bytes_per_pixel();
+            auto videoFrame = this->imageFrame.as<rs2::video_frame>();
+            int nrElements = videoFrame.get_height() * videoFrame.get_width() * videoFrame.get_bytes_per_pixel();
             this->imageData = new uint8_t[nrElements];
             int imageDataType;
-            frameToBytes(*this->imageFrame, this->imageData, imageDataType, nrElements);
+            frameToBytes(this->imageFrame, this->imageData, imageDataType, nrElements);
             assert (imageDataType == StandardTypes::TYPE_UINT_8);
             delete[] this->depthData;
-            nrElements = this->depthFrame->get_height() * this->depthFrame->get_width();
+            videoFrame = this->depthFrame.as<rs2::video_frame>();
+            nrElements = videoFrame.get_height() * videoFrame.get_width();
             this->depthData = new double[nrElements];
-            depthFrameToMeters(*this->depthFrame, this->depthData, nrElements);
+            depthFrameToMeters(this->depthFrame, this->depthData, nrElements);
         }
 
-        this->depthIntrinsics = this->depthFrame->get_profile().as<video_stream_profile>().get_intrinsics();
+        this->depthIntrinsics = this->depthFrame.get_profile().as<video_stream_profile>().get_intrinsics();
     }
     return true;
 }
@@ -261,7 +264,8 @@ void RealsenseCapture::computeAndDisplayFps() {
     // cout << "fps = " << fps << endl;
     if (this->writeFPSOnImage) {
         #ifdef OPENCV
-        cv::putText(this->image, fps_str, Point(2, 28), FONT_HERSHEY_COMPLEX, 1.0, this->SCALAR_BLUE, 1, LINE_AA);
+        cv::putText(this->image, fps_str, cv::Point(2, 28), cv::FONT_HERSHEY_COMPLEX, 1.0, this->SCALAR_BLUE, 1,
+                    cv::LINE_AA);
         #else
         cout << "Can not write fps on image when opencv is not enabled; fps = " << fps << endl;
         #endif

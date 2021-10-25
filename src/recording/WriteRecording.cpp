@@ -394,7 +394,7 @@ void WriteRecording::writeImage(cv::Mat *image) {
 void WriteRecording::writeDepth(cv::Mat *depth) {
     imageRotation(depth, this->writeRotation);
     if (this->parameters.depthFormat == "bin") {
-        Mat convertedData;
+        cv::Mat convertedData;
         convertDepthToMillimetersUInt16(depth, convertedData);
         matWriteBinary(this->depthWriterBinary, convertedData);
         return;

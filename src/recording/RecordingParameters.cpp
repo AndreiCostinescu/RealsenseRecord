@@ -8,7 +8,9 @@
 #include <AndreiUtils/utilsJson.h>
 
 #ifdef OPENCV
+
 #include <opencv2/opencv.hpp>
+
 #endif
 
 using namespace AndreiUtils;
@@ -50,12 +52,12 @@ RecordingParameters::RecordingParameters(string imageFormat, string depthFormat,
                 this->setParameters((rs2::video_stream_profile *) parameters, rotationType);
                 break;
             }
-                #ifdef OPENCV
-                case OPENCV: {
-                    this->setParameters((cv::VideoCapture *) parameters, rotationType);
-                    break;
-                }
-                #endif
+            #ifdef OPENCV
+            case OPENCV_VIDEO_CAPTURE: {
+                this->setParameters((cv::VideoCapture *) parameters, rotationType);
+                break;
+            }
+            #endif
             default: {
                 break;
             }
@@ -124,12 +126,14 @@ void RecordingParameters::setParameters(const rs2::video_stream_profile *_videoS
 }
 
 #ifdef OPENCV
+
 void RecordingParameters::setParameters(const cv::VideoCapture *_videoCapture, RotationType rotationType) {
     this->fps = _videoCapture->get(cv::CAP_PROP_FPS);
     this->setRotationDependentParameters(rotationType, (int) _videoCapture->get(cv::CAP_PROP_FRAME_WIDTH),
                                          (int) _videoCapture->get(cv::CAP_PROP_FRAME_HEIGHT));
     this->initialized = true;
 }
+
 #endif
 
 void RecordingParameters::setParameters(const RecordingParameters *recordingParameters,
@@ -181,6 +185,7 @@ void RecordingParameters::deserialize(const string &parametersFile, const string
 }
 
 #ifdef OPENCV
+
 void RecordingParameters::writeParameters(cv::FileStorage &fs) const {
     fs << "{";
     fs << "fps" << this->fps;
@@ -203,7 +208,7 @@ void RecordingParameters::writeParameters(cv::FileStorage &fs) const {
     fs << "}";
 }
 
-void RecordingParameters::readParameters(const FileNode &node) {
+void RecordingParameters::readParameters(const cv::FileNode &node) {
     this->fps = (double) node["fps"];
     this->rotation = (RotationType) (int) node["rotation"];
     this->width = (int) node["w"];
@@ -227,6 +232,7 @@ void RecordingParameters::readParameters(const FileNode &node) {
     }
     this->model = savedModel;
 }
+
 #endif
 
 void RecordingParameters::to_json(json &j) const {
@@ -336,6 +342,7 @@ bool RecordingParameters::isInitialized() const {
 }
 
 #ifdef OPENCV
+
 void cv::write(cv::FileStorage &fs, const string &, const RecordingParameters &x) {
     x.writeParameters(fs);
 }
@@ -347,6 +354,7 @@ void cv::read(const cv::FileNode &node, RecordingParameters &x, const RecordingP
         x.readParameters(node);
     }
 }
+
 #endif
 
 void to_json(nlohmann::json &j, const RecordingParameters &p) {

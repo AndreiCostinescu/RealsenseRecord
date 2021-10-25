@@ -8,6 +8,7 @@
 
 #ifdef OPENCV
 #include <AndreiUtils/utilsOpenCV.h>
+#include <AndreiUtils/utilsOpenMP.hpp>
 #endif
 
 using namespace AndreiUtils;
@@ -277,12 +278,12 @@ bool ReadRecording::readImage(uint8_t **image) {
         cv::Mat mat;
         *this->imageReader >> mat;
         if (mat.empty()) {
-            return false
+            return false;
         }
-        assert (matByteSize(mat) == (size_t) imageSize);
-        delete[] *image[];
-        *image = new uint8_t[matByteSize(mat)];
-        memcpy(*image, mat.data(), imageSize);
+        size_t imageSize = matByteSize(mat);
+        delete[] *image;
+        *image = new uint8_t[imageSize];
+        fastMemCopy(*image, mat.data, imageSize);
         return true;
         #else
         throw runtime_error("Can not read image in avi format when opencv is not enabled");
@@ -327,10 +328,10 @@ bool ReadRecording::readImage(uint8_t **image, int imageSize) {
         cv::Mat mat;
         *this->imageReader >> mat;
         if (mat.empty()) {
-            return false
+            return false;
         }
         assert (matByteSize(mat) == (size_t) imageSize);
-        memcpy(*image, mat.data(), imageSize);
+        fastMemCopy(*image, mat.data, imageSize);
         return true;
         #else
         throw runtime_error("Can not read image in avi format when opencv is not enabled");

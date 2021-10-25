@@ -39,13 +39,13 @@ namespace RealsenseRecording {
         void setDepth(const cv::Mat &_depth);
         #endif
 
-        rs2::video_frame *&getImageFrame();
+        rs2::frame &getImageFrame();
 
-        rs2::video_frame *getImageFrame() const;
+        rs2::video_frame getImageFrame() const;
 
-        rs2::depth_frame *&getDepthFrame();
+        rs2::frame &getDepthFrame();
 
-        rs2::depth_frame *getDepthFrame() const;
+        rs2::depth_frame getDepthFrame() const;
 
         rs2_intrinsics &getDepthIntrinsics();
 
@@ -66,15 +66,13 @@ namespace RealsenseRecording {
         rs2::config startConfig;
         rs2::frameset frames;
 
-        rs2::video_frame *imageFrame;
-        rs2::depth_frame *depthFrame;
+        rs2::frame imageFrame, depthFrame;
 
         #ifdef OPENCV
         cv::Mat image{}, depth{};
-        #else
+        #endif
         uint8_t *imageData{};
         double *depthData{};
-        #endif
         rs2_intrinsics depthIntrinsics;
 
         ReadRecording *inputRecording;

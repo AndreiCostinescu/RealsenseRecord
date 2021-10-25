@@ -8,9 +8,13 @@
 #include <AndreiUtils/enums/RotationType.h>
 #include <AndreiUtils/json.hpp>
 #include <librealsense2/rs.hpp>
-#include <opencv2/opencv.hpp>
 #include <string>
 #include <vector>
+#include "RecordingParametersType.h"
+
+#ifdef OPENCV
+#include <opencv2/opencv.hpp>
+#endif
 
 namespace RealsenseRecording {
     class RecordingParameters {
@@ -24,10 +28,16 @@ namespace RealsenseRecording {
                             AndreiUtils::RotationType rotationType = AndreiUtils::RotationType::NO_ROTATION);
 
         RecordingParameters(std::string imageFormat, std::string depthFormat, std::string parametersFormat,
+                            const void *parameters, RecordingParametersType parameterType,
+                            AndreiUtils::RotationType rotationType = AndreiUtils::NO_ROTATION);
+
+        #ifdef OPENCV
+        RecordingParameters(std::string imageFormat, std::string depthFormat, std::string parametersFormat,
                             const RecordingParameters *recordingParameters = nullptr,
                             rs2::video_stream_profile *videoStreamProfile = nullptr,
                             cv::VideoCapture *videoCapture = nullptr,
                             AndreiUtils::RotationType rotationType = AndreiUtils::RotationType::NO_ROTATION);
+        #endif
 
         RecordingParameters(double fps, int width, int height, float fx, float fy, float ppx, float ppy,
                             rs2_distortion model, const float coefficients[5], std::string imageFormat,
@@ -45,8 +55,10 @@ namespace RealsenseRecording {
         void setParameters(const rs2::video_stream_profile *videoStreamProfile,
                            AndreiUtils::RotationType rotationType = AndreiUtils::RotationType::NO_ROTATION);
 
+        #ifdef OPENCV
         void setParameters(const cv::VideoCapture *videoCapture,
                            AndreiUtils::RotationType rotationType = AndreiUtils::RotationType::NO_ROTATION);
+        #endif
 
         void setParameters(const RecordingParameters *recordingParameters,
                            AndreiUtils::RotationType rotationType = AndreiUtils::RotationType::NO_ROTATION);
@@ -55,11 +67,11 @@ namespace RealsenseRecording {
 
         void deserialize(const std::string &parametersFile, const std::string &_parametersFormat);
 
-        // Write serialization for this class
+        #ifdef OPENCV
         void writeParameters(cv::FileStorage &fs) const;
 
-        // Read serialization for this class
         void readParameters(const cv::FileNode &node);
+        #endif
 
         void to_json(nlohmann::json &j) const;
 
@@ -86,12 +98,14 @@ namespace RealsenseRecording {
     };
 }
 
+#ifdef OPENCV
 namespace cv {
     void write(cv::FileStorage &fs, const std::string &, const RealsenseRecording::RecordingParameters &x);
 
     void read(const cv::FileNode &node, RealsenseRecording::RecordingParameters &x,
               const RealsenseRecording::RecordingParameters &default_value = RealsenseRecording::RecordingParameters());
 }
+#endif
 
 void to_json(nlohmann::json &j, const RealsenseRecording::RecordingParameters &p);
 

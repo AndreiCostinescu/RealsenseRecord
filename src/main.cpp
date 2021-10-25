@@ -60,7 +60,9 @@ int main() {
                                  depthHeight, recordImageFormat, recordDepthFormat, recordParametersFormat);
         capture.run();
     } catch (exception &ex) {
+        #ifdef OPENCV
         cv::destroyAllWindows();
+        #endif
         cout << "Caught exception in main function: " << ex.what() << endl;
         return 1;
     }

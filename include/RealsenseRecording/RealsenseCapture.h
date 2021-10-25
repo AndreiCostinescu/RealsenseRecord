@@ -5,6 +5,7 @@
 #ifndef REALSENSERECORD_REALSENSECAPTURE_H
 #define REALSENSERECORD_REALSENSECAPTURE_H
 
+#include <AndreiUtils/classes/Timer.hpp>
 #include <RealsenseRecording/recording/ReadRecording.h>
 #include <RealsenseRecording/recording/WriteRecording.h>
 #include <string>
@@ -17,12 +18,14 @@ namespace RealsenseRecording {
                                   int depthWidth = 640, int depthHeight = 480,
                                   const std::string &recordImageFormat = "avi",
                                   const std::string &recordDepthFormat = "bin",
-                                  const std::string &recordParametersFormat = "xml", bool writeFPSOnImage = false);
+                                  const std::string &recordParametersFormat = "xml", bool withOpenCV = false,
+                                  bool writeFPSOnImage = false);
 
         ~RealsenseCapture();
 
         void run();
 
+        #ifdef OPENCV
         cv::Mat &getImage();
 
         cv::Mat getImage() const;
@@ -34,6 +37,15 @@ namespace RealsenseRecording {
         cv::Mat getDepth() const;
 
         void setDepth(const cv::Mat &_depth);
+        #endif
+
+        rs2::video_frame *&getImageFrame();
+
+        rs2::video_frame *getImageFrame() const;
+
+        rs2::depth_frame *&getDepthFrame();
+
+        rs2::depth_frame *getDepthFrame() const;
 
         rs2_intrinsics &getDepthIntrinsics();
 
@@ -48,29 +60,37 @@ namespace RealsenseRecording {
 
         void computeAndDisplayFps();
 
-        const int IMAGE_WIDTH, IMAGE_HEIGHT, IMAGE_FPS, DEPTH_WIDTH, DEPTH_HEIGHT, DEPTH_FPS;
+        int IMAGE_WIDTH, IMAGE_HEIGHT, IMAGE_FPS, DEPTH_WIDTH, DEPTH_HEIGHT, DEPTH_FPS;
 
         rs2::pipeline pipeline;
         rs2::config startConfig;
         rs2::frameset frames;
 
-        rs2::frame imageFrame, depthFrame;
+        rs2::video_frame *imageFrame;
+        rs2::depth_frame *depthFrame;
 
-        cv::Mat image, depth;
+        #ifdef OPENCV
+        cv::Mat image{}, depth{};
+        #else
+        uint8_t *imageData{};
+        double *depthData{};
+        #endif
         rs2_intrinsics depthIntrinsics;
 
         ReadRecording *inputRecording;
         WriteRecording *outputRecording;
 
+        #ifdef OPENCV
         const cv::Scalar SCALAR_BLACK = cv::Scalar(0.0, 0.0, 0.0);
         const cv::Scalar SCALAR_WHITE = cv::Scalar(255.0, 255.0, 255.0);
         const cv::Scalar SCALAR_BLUE = cv::Scalar(255.0, 0.0, 0.0);
         const cv::Scalar SCALAR_GREEN = cv::Scalar(0.0, 200.0, 0.0);
         const cv::Scalar SCALAR_RED = cv::Scalar(0.0, 0.0, 255.0);
+        #endif
 
-        std::chrono::system_clock::time_point start, end;
+        AndreiUtils::Timer fpsTimer;
         int fps = 0, sleepTime = 0;
-        bool writeFPSOnImage;
+        bool writeFPSOnImage, withOpenCV;
     };
 }
 

@@ -6,9 +6,9 @@
 #include <AndreiUtils/utilsFiles.h>
 #include <AndreiUtils/utilsJson.h>
 #include <configDirectoryLocation.h>
+#include <iostream>
 
 using namespace AndreiUtils;
-using namespace cv;
 using namespace RealsenseRecording;
 using namespace std;
 
@@ -56,24 +56,25 @@ string Recording::format(int number, const char *type, const string &format) {
     return outputFileNameBuffer;
 }
 
-Recording::Recording(string imageFormat, string depthFormat, string parameterFormat, RotationType rotationType) :
-        parameters(move(imageFormat), move(depthFormat), move(parameterFormat), rotationType), imageFile(), depthFile(), parameterFile() {}
+Recording::Recording(const string &imageFormat, const string &depthFormat, const string &parameterFormat,
+                     RotationType rotationType) :
+        Recording(imageFormat, depthFormat, parameterFormat, nullptr, RecordingParametersType::NO_PARAMETERS,
+                  rotationType) {}
 
-Recording::Recording(string imageFormat, string depthFormat, string parameterFormat,
-                     const RecordingParameters *recordingParameters, rs2::video_stream_profile *videoStreamProfile,
-                     cv::VideoCapture *videoCapture, RotationType rotationType) :
-        parameters(move(imageFormat), move(depthFormat), move(parameterFormat), recordingParameters, videoStreamProfile,
-                   videoCapture, rotationType), imageFile(), depthFile(), parameterFile() {}
+Recording::Recording(const string &imageFormat, const string &depthFormat, const string &parameterFormat,
+                     const void *parameters, RecordingParametersType parametersType, AndreiUtils::RotationType rotationType) :
+        parameters(imageFormat, depthFormat, parameterFormat, parameters, parametersType, rotationType), imageFile(),
+        depthFile(), parameterFile() {}
 
 Recording::Recording(double fps, int width, int height, float fx, float fy, float ppx, float ppy,
-                     rs2_distortion model, const float *coefficients, string imageFormat, string depthFormat,
-                     string parameterFormat, RotationType rotationType) :
-        parameters(fps, width, height, fx, fy, ppx, ppy, model, coefficients, move(imageFormat), move(depthFormat),
-                   move(parameterFormat), rotationType), imageFile(), depthFile(), parameterFile() {}
+                     rs2_distortion model, const float *coefficients, const string &imageFormat,
+                     const string &depthFormat, const string &parameterFormat, RotationType rotationType) :
+        parameters(fps, width, height, fx, fy, ppx, ppy, model, coefficients, imageFormat, depthFormat, parameterFormat,
+                   rotationType), imageFile(), depthFile(), parameterFile() {}
 
-Recording::Recording(double fps, rs2_intrinsics intrinsics, string imageFormat, string depthFormat,
-                     string parameterFormat, RotationType rotationType) :
-        parameters(fps, intrinsics, move(imageFormat), move(depthFormat), move(parameterFormat), rotationType),
+Recording::Recording(double fps, rs2_intrinsics intrinsics, const string &imageFormat, const string &depthFormat,
+                     const string &parameterFormat, RotationType rotationType) :
+        parameters(fps, intrinsics, imageFormat, depthFormat, parameterFormat, rotationType),
         imageFile(), depthFile(), parameterFile() {}
 
 Recording::~Recording() = default;
@@ -90,7 +91,7 @@ void Recording::setFiles(bool read, int fileNumber) {
 
     for (int i = (fileNumber >= 0) ? fileNumber : 0;; i++) {
         // check the existence of a parameter file with number "i"
-        for (const auto &j : RecordingParameters::PARAMETER_FORMATS) {
+        for (const auto &j: RecordingParameters::PARAMETER_FORMATS) {
             parameterFileFormat = j;
             checkParameterFile = Recording::getOutputDirectory() +
                                  Recording::format(i, "parameters", parameterFileFormat);

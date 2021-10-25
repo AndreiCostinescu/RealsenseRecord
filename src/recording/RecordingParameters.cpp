@@ -3,11 +3,15 @@
 //
 
 #include <RealsenseRecording/recording/RecordingParameters.h>
+#include <utility>
 #include <AndreiUtils/utils.hpp>
 #include <AndreiUtils/utilsJson.h>
 
+#ifdef OPENCV
+#include <opencv2/opencv.hpp>
+#endif
+
 using namespace AndreiUtils;
-using namespace cv;
 using namespace nlohmann;
 using namespace RealsenseRecording;
 using namespace std;
@@ -24,31 +28,40 @@ const map<string, rs2_distortion> RecordingParameters::DISTORTION_MODELS = {
 
 const vector<string> RecordingParameters::PARAMETER_FORMATS = {"xml", "json",};
 
-RecordingParameters::RecordingParameters()
-        : fps(), rotation(RotationType::NO_ROTATION), model(), coefficients(), initialized(false) {}
+RecordingParameters::RecordingParameters() : RecordingParameters("", "", "", RotationType::NO_ROTATION) {}
 
 RecordingParameters::RecordingParameters(string imageFormat, string depthFormat, string parametersFormat,
                                          RotationType rotationType) :
-        fps(), rotation(rotationType), model(), coefficients(), imageFormat(move(imageFormat)),
-        depthFormat(move(depthFormat)), parametersFormat(move(parametersFormat)), initialized(false) {}
+        RecordingParameters(move(imageFormat), move(depthFormat), move(parametersFormat), nullptr,
+                            RecordingParametersType::NO_PARAMETERS, rotationType) {}
 
 RecordingParameters::RecordingParameters(string imageFormat, string depthFormat, string parametersFormat,
-                                         const RecordingParameters *recordingParameters,
-                                         rs2::video_stream_profile *videoStreamProfile, VideoCapture *videoCapture,
+                                         const void *parameters, RecordingParametersType parametersType,
                                          RotationType rotationType) :
         fps(), rotation(rotationType), model(), coefficients(), imageFormat(move(imageFormat)),
-        depthFormat(move(depthFormat)), parametersFormat(move(parametersFormat)) {
-    assert (recordingParameters != nullptr ^ videoStreamProfile != nullptr ^ videoCapture != nullptr);
-    if (recordingParameters != nullptr) {
-        this->setParameters(recordingParameters, rotationType);
+        depthFormat(move(depthFormat)), parametersFormat(move(parametersFormat)), initialized(false) {
+    if (parameters != nullptr) {
+        switch (parametersType) {
+            case RECORDING_PARAMETERS: {
+                this->setParameters((RecordingParameters *) parameters, rotationType);
+                break;
+            }
+            case REALSENSE_INTRINSICS: {
+                this->setParameters((rs2::video_stream_profile *) parameters, rotationType);
+                break;
+            }
+                #ifdef OPENCV
+                case OPENCV: {
+                    this->setParameters((cv::VideoCapture *) parameters, rotationType);
+                    break;
+                }
+                #endif
+            default: {
+                break;
+            }
+        }
+        this->initialized = true;
     }
-    if (videoStreamProfile != nullptr) {
-        this->setParameters(videoStreamProfile, rotationType);
-    }
-    if (videoCapture != nullptr) {
-        this->setParameters(videoCapture, rotationType);
-    }
-    this->initialized = true;
 }
 
 RecordingParameters::RecordingParameters(double fps, int width, int height, float fx, float fy, float ppx, float ppy,
@@ -87,7 +100,7 @@ void RecordingParameters::clear() {
     this->fy = 0;
     this->ppx = 0;
     this->ppy = 0;
-    for (float &coefficient : this->coefficients) {
+    for (float &coefficient: this->coefficients) {
         coefficient = 0;
     }
     this->model = RS2_DISTORTION_NONE;
@@ -110,12 +123,14 @@ void RecordingParameters::setParameters(const rs2::video_stream_profile *_videoS
     this->initialized = true;
 }
 
+#ifdef OPENCV
 void RecordingParameters::setParameters(const cv::VideoCapture *_videoCapture, RotationType rotationType) {
     this->fps = _videoCapture->get(cv::CAP_PROP_FPS);
     this->setRotationDependentParameters(rotationType, (int) _videoCapture->get(cv::CAP_PROP_FRAME_WIDTH),
                                          (int) _videoCapture->get(cv::CAP_PROP_FRAME_HEIGHT));
     this->initialized = true;
 }
+#endif
 
 void RecordingParameters::setParameters(const RecordingParameters *recordingParameters,
                                         RotationType rotationType) {
@@ -132,9 +147,13 @@ void RecordingParameters::setParameters(const RecordingParameters *recordingPara
 
 void RecordingParameters::serialize(const string &parametersFile) const {
     if (this->parametersFormat == "xml") {
-        FileStorage fs(parametersFile, FileStorage::WRITE);
+        #ifdef OPENCV
+        cv::FileStorage fs(parametersFile, cv::FileStorage::WRITE);
         fs << "recordingData" << (*this);
         fs.release();
+        #else
+        cout << "Can not serialize parameters in xml format when opencv is not enabled!" << endl;
+        #endif
     } else if (this->parametersFormat == "json") {
         json data;
         this->to_json(data);
@@ -146,9 +165,13 @@ void RecordingParameters::serialize(const string &parametersFile) const {
 
 void RecordingParameters::deserialize(const string &parametersFile, const string &_parametersFormat) {
     if (_parametersFormat == "xml") {
-        FileStorage recordingParameters(parametersFile, FileStorage::READ);
+        #ifdef OPENCV
+        cv::FileStorage recordingParameters(parametersFile, cv::FileStorage::READ);
         recordingParameters["recordingData"] >> (*this);
         recordingParameters.release();
+        #else
+        cout << "Can not deserialize parameters in xml format when opencv is not enabled!" << endl;
+        #endif
     } else if (_parametersFormat == "json") {
         this->from_json(readJsonFile(parametersFile));
     } else {
@@ -157,6 +180,7 @@ void RecordingParameters::deserialize(const string &parametersFile, const string
     this->initialized = true;
 }
 
+#ifdef OPENCV
 void RecordingParameters::writeParameters(cv::FileStorage &fs) const {
     fs << "{";
     fs << "fps" << this->fps;
@@ -203,6 +227,7 @@ void RecordingParameters::readParameters(const FileNode &node) {
     }
     this->model = savedModel;
 }
+#endif
 
 void RecordingParameters::to_json(json &j) const {
     j.clear();
@@ -310,17 +335,19 @@ bool RecordingParameters::isInitialized() const {
     return this->initialized;
 }
 
-void cv::write(FileStorage &fs, const string &, const RecordingParameters &x) {
+#ifdef OPENCV
+void cv::write(cv::FileStorage &fs, const string &, const RecordingParameters &x) {
     x.writeParameters(fs);
 }
 
-void cv::read(const FileNode &node, RecordingParameters &x, const RecordingParameters &default_value) {
+void cv::read(const cv::FileNode &node, RecordingParameters &x, const RecordingParameters &default_value) {
     if (node.empty()) {
         x = default_value;
     } else {
         x.readParameters(node);
     }
 }
+#endif
 
 void to_json(nlohmann::json &j, const RecordingParameters &p) {
     p.to_json(j);

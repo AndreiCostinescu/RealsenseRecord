@@ -9,7 +9,6 @@
 #include <fstream>
 #include <librealsense2/rs.hpp>
 #include <mutex>
-#include <opencv2/opencv.hpp>
 #include <RealsenseRecording/recording/RecordingParameters.h>
 #include <thread>
 
@@ -20,24 +19,21 @@ namespace RealsenseRecording {
 
         static std::string format(int number, const char *type, const std::string &format);
 
-        explicit Recording(std::string imageFormat = "avi", std::string depthFormat = "bin",
-                           std::string parameterFormat = "json",
+        explicit Recording(const std::string &imageFormat = "avi", const std::string &depthFormat = "bin",
+                           const std::string &parameterFormat = "json",
                            AndreiUtils::RotationType rotationType = AndreiUtils::RotationType::NO_ROTATION);
 
-        Recording(std::string imageFormat, std::string depthFormat, std::string parameterFormat,
-                  const RecordingParameters *recordingParameters = nullptr,
-                  rs2::video_stream_profile *videoStreamProfile = nullptr,
-                  cv::VideoCapture *videoCapture = nullptr,
+        Recording(const std::string &imageFormat, const std::string &depthFormat, const std::string &parameterFormat,
+                  const void *parameters, RecordingParametersType parametersType,
                   AndreiUtils::RotationType rotationType = AndreiUtils::RotationType::NO_ROTATION);
 
         Recording(double fps, int width, int height, float fx, float fy, float ppx, float ppy, rs2_distortion model,
-                  const float coefficients[5], std::string imageFormat = "avi", std::string depthFormat = "bin",
-                  std::string parameterFormat = "xml",
+                  const float coefficients[5], const std::string &imageFormat = "avi",
+                  const std::string &depthFormat = "bin", const std::string &parameterFormat = "xml",
                   AndreiUtils::RotationType rotationType = AndreiUtils::RotationType::NO_ROTATION);
 
-        Recording(double fps, rs2_intrinsics intrinsics, std::string imageFormat = "avi",
-                  std::string depthFormat = "bin",
-                  std::string parameterFormat = "xml",
+        Recording(double fps, rs2_intrinsics intrinsics, const std::string &imageFormat = "avi",
+                  const std::string &depthFormat = "bin", const std::string &parameterFormat = "xml",
                   AndreiUtils::RotationType rotationType = AndreiUtils::RotationType::NO_ROTATION);
 
         virtual ~Recording();

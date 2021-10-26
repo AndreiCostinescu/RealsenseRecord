@@ -11,8 +11,10 @@
 #include <iostream>
 
 #ifdef OPENCV
+
 #include <AndreiUtils/utilsOpenCV.h>
 #include <AndreiUtils/utilsOpenCVRealsense.h>
+
 #endif
 
 using namespace AndreiUtils;
@@ -23,40 +25,42 @@ using namespace std;
 int WriteRecording::dataBufferSize = 0;
 
 WriteRecording *WriteRecording::createEmptyPtr(const string &imageWriteFormat, const string &depthWriteFormat,
-                                               const string &parametersWriteFormat,
+                                               const string &parametersWriteFormat, bool withOpenCV,
                                                AndreiUtils::RotationType rotationType) {
-    return new WriteRecording(true, imageWriteFormat, depthWriteFormat, parametersWriteFormat, rotationType);
+    return new WriteRecording(true, imageWriteFormat, depthWriteFormat, parametersWriteFormat, withOpenCV,
+                              rotationType);
 }
 
 WriteRecording::WriteRecording(const std::string &imageFormat, const std::string &depthFormat,
                                const std::string &parameterFormat, const void *parameters,
-                               RecordingParametersType parametersType, AndreiUtils::RotationType rotationType) :
+                               RecordingParametersType parametersType, bool withOpenCV,
+                               AndreiUtils::RotationType rotationType) :
         Recording(imageFormat, depthFormat, parameterFormat, parameters, parametersType, rotationType),
         imageBytesBuffer(), depthBytesBuffer(), countBuffer(), writeFlag(true), bufferStartIndex(0), bufferEndIndex(0),
         bufferSize(0), writeRotation(rotationType), imageWriterInitialized(false), depthWriterInitialized(false),
         parametersSet(true) {
-    this->initializeThreadAndBuffers();
+    this->initializeThreadAndBuffers(withOpenCV);
 }
 
 WriteRecording::WriteRecording(double fps, int width, int height, float fx, float fy, float ppx, float ppy,
                                rs2_distortion model, const float *coefficients, const string &imageWriteFormat,
-                               const string &depthWriteFormat, const string &parametersWriteFormat,
+                               const string &depthWriteFormat, const string &parametersWriteFormat, bool withOpenCV,
                                RotationType rotationType) :
         Recording(fps, width, height, fx, fy, ppx, ppy, model, coefficients, imageWriteFormat, depthWriteFormat,
                   parametersWriteFormat, rotationType), imageBytesBuffer(), depthBytesBuffer(), countBuffer(),
         writeFlag(true), bufferStartIndex(0), bufferEndIndex(0), bufferSize(0), writeRotation(rotationType),
         imageWriterInitialized(false), depthWriterInitialized(false), parametersSet(true) {
-    this->initializeThreadAndBuffers();
+    this->initializeThreadAndBuffers(withOpenCV);
 }
 
 WriteRecording::WriteRecording(double fps, rs2_intrinsics intrinsics, const string &imageWriteFormat,
                                const string &depthWriteFormat, const string &parametersWriteFormat,
-                               RotationType rotationType) :
+                               bool withOpenCV, RotationType rotationType) :
         Recording(fps, intrinsics, imageWriteFormat, depthWriteFormat, parametersWriteFormat, rotationType),
         imageBytesBuffer(), depthBytesBuffer(), countBuffer(), writeFlag(true), bufferStartIndex(0), bufferEndIndex(0),
         bufferSize(0), writeRotation(rotationType), imageWriterInitialized(false), depthWriterInitialized(false),
         parametersSet(true) {
-    this->initializeThreadAndBuffers();
+    this->initializeThreadAndBuffers(withOpenCV);
 }
 
 WriteRecording::~WriteRecording() {
@@ -77,10 +81,12 @@ void WriteRecording::setParameters(const rs2::video_stream_profile *_videoStream
 }
 
 #ifdef OPENCV
+
 void WriteRecording::setParameters(const cv::VideoCapture *_videoCapture) {
     this->parameters.setParameters(_videoCapture, this->writeRotation);
     this->parametersSet = true;
 }
+
 #endif
 
 void WriteRecording::setParameters(const RecordingParameters *_recordingParameters) {
@@ -89,6 +95,7 @@ void WriteRecording::setParameters(const RecordingParameters *_recordingParamete
 }
 
 #ifdef OPENCV
+
 bool WriteRecording::writeData(cv::Mat *image, rs2::depth_frame *depth, unsigned long long counter) {
     if (depth == nullptr) {
         return this->writeData(image, (cv::Mat *) nullptr, counter);
@@ -157,6 +164,7 @@ bool WriteRecording::writeData(cv::Mat *image, cv::Mat *depth, unsigned long lon
 bool WriteRecording::writeData(cv::Mat &image, cv::Mat &depth, unsigned long long counter) {
     return this->writeData(&image, &depth, counter);
 }
+
 #endif
 
 bool WriteRecording::writeData(rs2::video_frame *image, rs2::depth_frame *depth, unsigned long long counter) {
@@ -231,7 +239,7 @@ bool WriteRecording::writeData(uint8_t *image, int nrImageElements, uint16_t *de
     return true;
 }
 
-bool WriteRecording::writeData(uint8_t *image, int nrImageElements, double *depth, int nrDepthElements,
+bool WriteRecording::writeData(uint8_t *image, int nrImageElements, const double *depth, int nrDepthElements,
                                unsigned long long counter) {
     if ((image != nullptr && !this->imageWriterInitialized) || (depth != nullptr && !this->depthWriterInitialized)) {
         if (!this->imageWriterInitialized && !this->depthWriterInitialized) {
@@ -296,7 +304,7 @@ bool WriteRecording::writeData(uint8_t *image, int nrImageElements, double *dept
 
 WriteRecording::WriteRecording(bool iWillSetParametersLater, const std::string &imageWriteFormat,
                                const std::string &depthWriteFormat, const std::string &parametersWriteFormat,
-                               AndreiUtils::RotationType rotationType) :
+                               bool withOpenCV, AndreiUtils::RotationType rotationType) :
         Recording(imageWriteFormat, depthWriteFormat, parametersWriteFormat, rotationType), imageBytesBuffer(),
         depthBytesBuffer(), countBuffer(), writeFlag(true), bufferStartIndex(0), bufferEndIndex(0), bufferSize(0),
         writeRotation(rotationType), imageWriterInitialized(false), depthWriterInitialized(false),
@@ -304,7 +312,7 @@ WriteRecording::WriteRecording(bool iWillSetParametersLater, const std::string &
     if (!iWillSetParametersLater) {
         throw runtime_error("When creating an empty WriteRecording, you must agree to set the parameters later!");
     }
-    this->initializeThreadAndBuffers();
+    this->initializeThreadAndBuffers(withOpenCV);
 }
 
 void WriteRecording::bufferThreadWrite(bool useOpenCV) {
@@ -379,9 +387,13 @@ void WriteRecording::initializeThreadAndBuffers(bool withOpenCV) {
 }
 
 #ifdef OPENCV
+
 void WriteRecording::writeImage(cv::Mat *image) {
     imageRotation(image, this->writeRotation);
     if (this->parameters.imageFormat == "avi") {
+        if (this->imageWriter == nullptr) {
+            throw runtime_error("Image writer is nullptr although it shouldn't be at this moment...");
+        }
         this->imageWriter->write(*image);
         return;
     } else if (this->parameters.imageFormat == "bin") {
@@ -401,6 +413,7 @@ void WriteRecording::writeDepth(cv::Mat *depth) {
     }
     throw runtime_error("Unknown depth format: \"" + this->parameters.depthFormat + "\"");
 }
+
 #endif
 
 void WriteRecording::writeImage(uint8_t *imageData) {
@@ -461,7 +474,9 @@ void WriteRecording::releaseImageWriter() {
         return;
     } else if (this->parameters.imageFormat == "avi") {
         #ifdef OPENCV
-        this->imageWriter->release();
+        if (this->imageWriter != nullptr) {
+            this->imageWriter->release();
+        }
         delete this->imageWriter;
         #else
         cout << "Warning: releasing image writer in imageFormat avi when OPENCV is not enabled" << endl;

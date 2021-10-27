@@ -43,6 +43,9 @@ namespace RealsenseRecording {
 
         void setParameters(const RecordingParameters *_recordingParameters);
 
+        void setParameters(double fps, int width, int height, float fx, float fy, float ppx, float ppy,
+                           rs2_distortion model, const float *coefficients);
+
         #ifdef OPENCV
 
         bool writeData(cv::Mat *image, rs2::depth_frame *depth, unsigned long long counter = -1);

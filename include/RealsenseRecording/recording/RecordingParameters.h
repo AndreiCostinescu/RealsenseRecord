@@ -31,14 +31,6 @@ namespace RealsenseRecording {
                             const void *parameters, RecordingParametersType parameterType,
                             AndreiUtils::RotationType rotationType = AndreiUtils::NO_ROTATION);
 
-        #ifdef OPENCV
-        RecordingParameters(std::string imageFormat, std::string depthFormat, std::string parametersFormat,
-                            const RecordingParameters *recordingParameters = nullptr,
-                            rs2::video_stream_profile *videoStreamProfile = nullptr,
-                            cv::VideoCapture *videoCapture = nullptr,
-                            AndreiUtils::RotationType rotationType = AndreiUtils::RotationType::NO_ROTATION);
-        #endif
-
         RecordingParameters(double fps, int width, int height, float fx, float fy, float ppx, float ppy,
                             rs2_distortion model, const float coefficients[5], std::string imageFormat,
                             std::string depthFormat, std::string parametersFormat,
@@ -61,6 +53,10 @@ namespace RealsenseRecording {
         #endif
 
         void setParameters(const RecordingParameters *recordingParameters,
+                           AndreiUtils::RotationType rotationType = AndreiUtils::RotationType::NO_ROTATION);
+
+        void setParameters(double _fps, int _width, int _height, float _fx, float _fy, float _ppx, float _ppy,
+                           rs2_distortion _model, const float *_coefficients,
                            AndreiUtils::RotationType rotationType = AndreiUtils::RotationType::NO_ROTATION);
 
         void serialize(const std::string &parametersFile) const;

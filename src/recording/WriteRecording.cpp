@@ -94,6 +94,12 @@ void WriteRecording::setParameters(const RecordingParameters *_recordingParamete
     this->parametersSet = true;
 }
 
+void WriteRecording::setParameters(double fps, int width, int height, float fx, float fy, float ppx, float ppy,
+                                   rs2_distortion model, const float *coefficients) {
+    this->parameters.setParameters(fps, width, height, fx, fy, ppx, ppy, model, coefficients, this->writeRotation);
+    this->parametersSet = true;
+}
+
 #ifdef OPENCV
 
 bool WriteRecording::writeData(cv::Mat *image, rs2::depth_frame *depth, unsigned long long counter) {

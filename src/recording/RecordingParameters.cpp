@@ -52,12 +52,12 @@ RecordingParameters::RecordingParameters(string imageFormat, string depthFormat,
                 this->setParameters((rs2::video_stream_profile *) parameters, rotationType);
                 break;
             }
-            #ifdef OPENCV
+                #ifdef OPENCV
             case OPENCV_VIDEO_CAPTURE: {
                 this->setParameters((cv::VideoCapture *) parameters, rotationType);
                 break;
             }
-            #endif
+                #endif
             default: {
                 break;
             }
@@ -69,12 +69,9 @@ RecordingParameters::RecordingParameters(string imageFormat, string depthFormat,
 RecordingParameters::RecordingParameters(double fps, int width, int height, float fx, float fy, float ppx, float ppy,
                                          rs2_distortion model, const float *coefficients, string imageFormat,
                                          string depthFormat, string parametersFormat, RotationType rotationType) :
-        fps(fps), rotation(rotationType), model(model), coefficients(), imageFormat(move(imageFormat)),
+        fps(), rotation(rotationType), model(), coefficients(), imageFormat(move(imageFormat)),
         depthFormat(move(depthFormat)), parametersFormat(move(parametersFormat)) {
-    this->setRotationDependentParameters(rotationType, width, height, fx, fy, ppx, ppy);
-    for (int i = 0; i < 5; i++) {
-        this->coefficients[i] = coefficients[i];
-    }
+    this->setParameters(fps, width, height, fx, fy, ppx, ppy, model, coefficients, rotationType);
     this->initialized = true;
 }
 
@@ -145,6 +142,18 @@ void RecordingParameters::setParameters(const RecordingParameters *recordingPara
     this->model = recordingParameters->model;
     for (int i = 0; i < 5; i++) {
         this->coefficients[i] = recordingParameters->coefficients[i];
+    }
+    this->initialized = true;
+}
+
+void RecordingParameters::setParameters(double _fps, int _width, int _height, float _fx, float _fy, float _ppx,
+                                        float _ppy, rs2_distortion _model, const float *_coefficients,
+                                        RotationType rotationType) {
+    this->fps = _fps;
+    this->setRotationDependentParameters(rotationType, _width, _height, _fx, _fy, _ppx, _ppy);
+    this->model = _model;
+    for (int i = 0; i < 5; i++) {
+        this->coefficients[i] = _coefficients[i];
     }
     this->initialized = true;
 }

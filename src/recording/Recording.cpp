@@ -37,18 +37,21 @@ string Recording::format(int number, const char *type, const string &format) {
 
     if (strcmp(type, "image") == 0 || strcmp(type, "video") == 0) {
         if (format != "bin" && format != "avi") {
-            throw runtime_error("Unknown format for image: \"" + format + R"(". Accepted are "bin" and "avi")");
+            throw runtime_error("At file " + to_string(number) + ": unknown format for image: \"" + format +
+                                R"(". Accepted are "bin" and "avi")");
         }
     } else if (strcmp(type, "depth") == 0) {
         if (format != "bin") {
-            throw runtime_error("Unknown format for depth: \"" + format + R"(". Accepted is "bin")");
+            throw runtime_error("At file " + to_string(number) + ": unknown format for depth: \"" + format +
+                                R"(". Accepted is "bin")");
         }
     } else if (strcmp(type, "parameters") == 0) {
         if (format != "xml" && format != "json") {
-            throw runtime_error("Unknown format for parameters: \"" + format + R"(". Accepted are "json" and "xml")");
+            throw runtime_error("At file " + to_string(number) + ": unknown format for parameters: \"" + format +
+                                R"(". Accepted are "json" and "xml")");
         }
     } else {
-        throw runtime_error("Unknown formatting type: " + string(type));
+        throw runtime_error("At file " + to_string(number) + ": unknown formatting type: " + string(type));
     }
 
     strcat(outputFileNameBuffer, ".");
@@ -62,7 +65,8 @@ Recording::Recording(const string &imageFormat, const string &depthFormat, const
                   rotationType) {}
 
 Recording::Recording(const string &imageFormat, const string &depthFormat, const string &parameterFormat,
-                     const void *parameters, RecordingParametersType parametersType, AndreiUtils::RotationType rotationType) :
+                     const void *parameters, RecordingParametersType parametersType,
+                     AndreiUtils::RotationType rotationType) :
         parameters(imageFormat, depthFormat, parameterFormat, parameters, parametersType, rotationType), imageFile(),
         depthFile(), parameterFile() {}
 

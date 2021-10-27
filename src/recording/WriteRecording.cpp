@@ -117,6 +117,7 @@ bool WriteRecording::writeData(cv::Mat *image, cv::Mat *depth, unsigned long lon
 
         if (image != nullptr) {
             if (!this->initializeImageWriter()) {
+                cout << "Can not initialize image writer..." << endl;
                 return false;
             }
             this->imageWriterInitialized = true;
@@ -124,6 +125,7 @@ bool WriteRecording::writeData(cv::Mat *image, cv::Mat *depth, unsigned long lon
 
         if (depth != nullptr) {
             if (!this->initializeDepthWriter()) {
+                cout << "Can not initialize depth writer..." << endl;
                 return false;
             }
             this->depthWriterInitialized = true;

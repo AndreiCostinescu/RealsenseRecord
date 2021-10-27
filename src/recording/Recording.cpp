@@ -156,7 +156,6 @@ void Recording::setFiles(bool read, int fileNumber) {
             this->depthFile = checkDepthFile;
             break;
         }
-
     }
     if (read && !foundFiles) {
         this->parameters.clear();

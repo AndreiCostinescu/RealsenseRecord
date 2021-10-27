@@ -19,7 +19,7 @@ namespace RealsenseRecording {
                                   const std::string &recordImageFormat = "avi",
                                   const std::string &recordDepthFormat = "bin",
                                   const std::string &recordParametersFormat = "xml", bool withOpenCV = false,
-                                  bool writeFPSOnImage = false);
+                                  bool withFrameAlignment = true, bool writeFPSOnImage = false);
 
         ~RealsenseCapture();
 
@@ -63,6 +63,7 @@ namespace RealsenseRecording {
         int IMAGE_WIDTH, IMAGE_HEIGHT, IMAGE_FPS, DEPTH_WIDTH, DEPTH_HEIGHT, DEPTH_FPS;
 
         rs2::pipeline pipeline;
+        rs2::align alignTo;
         rs2::config startConfig;
         rs2::frameset frames;
 
@@ -88,7 +89,7 @@ namespace RealsenseRecording {
 
         AndreiUtils::Timer fpsTimer;
         int fps = 0, sleepTime = 0;
-        bool writeFPSOnImage, withOpenCV;
+        bool writeFPSOnImage, withOpenCV, withFrameAlignment;
     };
 }
 

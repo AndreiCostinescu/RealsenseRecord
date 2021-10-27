@@ -21,10 +21,12 @@ using namespace std;
 RealsenseCapture::RealsenseCapture(int fps, bool withRecord, int recordedFileNumber, const string &recordedBagFile,
                                    int colorWidth, int colorHeight, int depthWidth, int depthHeight,
                                    const string &recordImageFormat, const string &recordDepthFormat,
-                                   const string &recordParametersFormat, bool withOpenCV, bool writeFPSOnImage) :
+                                   const string &recordParametersFormat, bool withOpenCV, bool withFrameAlignment,
+                                   bool writeFPSOnImage) :
         IMAGE_FPS(fps), DEPTH_FPS(fps), inputRecording(), outputRecording(), IMAGE_HEIGHT(colorHeight),
         IMAGE_WIDTH(colorWidth), DEPTH_HEIGHT(depthHeight), DEPTH_WIDTH(depthWidth), depthIntrinsics(),
-        writeFPSOnImage(writeFPSOnImage), withOpenCV(withOpenCV) {
+        writeFPSOnImage(writeFPSOnImage), alignTo(RS2_STREAM_COLOR), withOpenCV(withOpenCV),
+        withFrameAlignment(withFrameAlignment) {
     if (recordedFileNumber > -1) {
         this->inputRecording = new ReadRecording(recordedFileNumber);
         if (withRecord) {
@@ -220,6 +222,10 @@ bool RealsenseCapture::updateFrame() {
         // Wait for next set of frames
         try {
             this->frames = this->pipeline.wait_for_frames(1000);
+            if (this->withFrameAlignment) {
+                // Make sure the frames are spatially aligned
+                this->frames = this->alignTo.process(this->frames);
+            }
         } catch (exception &e) {
             cout << "Caught exception while waiting for frames: " << e.what() << endl;
             return false;

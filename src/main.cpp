@@ -54,10 +54,21 @@ int main() {
     if (config.contains("recordParametersFormat") && !config["recordParametersFormat"].get<string>().empty()) {
         recordParametersFormat = config["recordParametersFormat"].get<string>();
     }
+    bool withOpenCV = true, withFrameAlignment = true, writeFPSOnImage = true;
+    if (config.contains("withOpenCV")) {
+        withOpenCV = config["withOpenCV"].get<bool>();
+    }
+    if (config.contains("withFrameAlignment")) {
+        withFrameAlignment = config["withFrameAlignment"].get<bool>();
+    }
+    if (config.contains("writeFPSOnImage")) {
+        writeFPSOnImage = config["writeFPSOnImage"].get<bool>();
+    }
 
     try {
         RealsenseCapture capture(fps, withRecord, recordedFileNumber, bagFile, colorWidth, colorHeight, depthWidth,
-                                 depthHeight, recordImageFormat, recordDepthFormat, recordParametersFormat);
+                                 depthHeight, recordImageFormat, recordDepthFormat, recordParametersFormat,
+                                 withOpenCV, withFrameAlignment, writeFPSOnImage);
         capture.run();
     } catch (exception &ex) {
         #ifdef OPENCV
